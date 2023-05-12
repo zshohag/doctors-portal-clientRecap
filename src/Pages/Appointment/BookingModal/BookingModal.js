@@ -1,9 +1,14 @@
 import { format } from "date-fns";
-import React from "react";
+import React, { useContext } from "react";
+import { toast } from "react-toastify";
 
-const BookingModal = ({ treatment, selectedDate , setTreatment}) => {
-  const { name, slots } = treatment;
+import { AuthContext } from "../../../contexts/AuthProvider";
+
+const BookingModal = ({ treatment, selectedDate, setTreatment, refetch }) => {
+  const { name: treatmentName, slots, price } = treatment;
   const date = format(selectedDate, "PP");
+
+  const { user } = useContext(AuthContext);
 
   const handleBooking = (event) => {
     event.preventDefault();
@@ -13,17 +18,43 @@ const BookingModal = ({ treatment, selectedDate , setTreatment}) => {
     const email = form.email.value;
     const phone = form.phone.value;
 
+    //store booking info in the database
+
     const booking = {
       appointmentDate: date,
-      treatmentName : treatment.name,
-      patientName: name,
+      treatment: treatmentName,
+      patient: name,
       slot,
       email,
       phone,
+      price,
     };
     console.log(booking);
-    setTreatment(null)
 
+    fetch("https://doctors-portal-server-rouge-one.vercel.app/bookings", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+      },
+      body: JSON.stringify(booking), // look up |^|
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        console.log(data);
+        if (data.acknowledged) {
+          setTreatment(null);
+          toast.success(" Booking Done Successfully  !", {
+            position: "top-center",
+            autoClose: 2000,
+          });
+          refetch();
+        } else {
+          toast.error(data.message, {
+            position: "top-center",
+            autoClose: 3000,
+          });
+        }
+      });
   };
 
   return (
@@ -37,14 +68,13 @@ const BookingModal = ({ treatment, selectedDate , setTreatment}) => {
           >
             ✕
           </label>
-          <h3 className="text-lg font-bold"> {name} </h3>
+          <h3 className="text-lg font-bold"> {treatmentName} </h3>
           <p className="py-4"></p>
           <form onSubmit={handleBooking}>
             <input
               type="text"
               value={date}
               className="input input-bordered w-full  m-2"
-              disabled
             />
 
             <select name="slot" className="select select-bordered w-full m-2 ">
@@ -54,18 +84,25 @@ const BookingModal = ({ treatment, selectedDate , setTreatment}) => {
                 </option>
               ))}
             </select>
+
             <input
               name="name"
-              type="name"
-              placeholder="Your Name"
-              className="input input-bordered w-full  m-2 "
+              type="text"
+              placeholder="name"
+              defaultValue={user?.displayName}
+              className="input input-bordered w-full  m-2"
+              readOnly
             />
+
             <input
               name="email"
               type="email"
-              placeholder="Your Email"
-              className="input input-bordered w-full  m-2 "
+              placeholder="email"
+              defaultValue={user?.email}
+              className="input input-bordered w-full  m-2"
+              readOnly
             />
+
             <input
               name="phone"
               type="text"

@@ -8,7 +8,7 @@ const AppointmentBanner = ({ selectedDate, setSelectedDate }) => {
     <div>
       <div className="hero px-10 " style={{ backgroundImage: `url(${bg})` }}>
         <div className="hero-content flex-col lg:flex-row-reverse">
-          <div className=" hidden md:block lg:block " >
+          <div className=" hidden md:block lg:block ">
             <h1 className="text-5xl font-bold">Your New Smile Starts Here</h1>
             <p className="py-6">
               Lorem ipsum dolor sit amet, consectetur adipisicing elit. Sed
@@ -26,7 +26,6 @@ const AppointmentBanner = ({ selectedDate, setSelectedDate }) => {
           </div>
         </div>
       </div>
-     
     </div>
   );
 };
